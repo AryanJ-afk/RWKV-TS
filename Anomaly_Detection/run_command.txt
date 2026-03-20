@@ -1,0 +1,39 @@
+python run.py \
+  --task_name anomaly_detection \
+  --is_training 1 \
+  --model_id t06_base \
+  --model RWKV4TS \
+  --data T06 \
+  --root_path ./dataset/T06 \
+  --features M \
+  --seq_len 50 \
+  --enc_in 46 \
+  --dec_in 46 \
+  --c_out 46 \
+  --d_model 64 \
+  --n_heads 4 \
+  --e_layers 1 \
+  --d_ff 64 \
+  --batch_size 64 \
+  --train_epochs 3 \
+  --patience 2 \
+  --learning_rate 0.0001 \
+  --anomaly_ratio 3.28 \
+  --use_gpu False \
+  --num_workers 0 \
+  --turbine_id T06 \
+  --feature_mode Avg \
+  --failure_window_hours 48 \
+  --imputation_method time_linear_ffill_bfill
+
+
+
+
+
+rm -rf rwkvts-ad
+python3.10 -m venv rwkvts-ad
+source rwkvts-ad/bin/activate
+python -m pip install --upgrade pip setuptools wheel
+python --version
+pip --version
+pip install -r requirements2.txt

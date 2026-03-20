@@ -5,7 +5,7 @@ from pathlib import Path
 # Config
 # =========================
 TURBINE_ID = "T06"
-WINDOW_HOURS = 24
+WINDOW_HOURS = 48
 
 SIGNALS_FILE = Path("data/raw/Wind-Turbine-SCADA-signals-2016.xlsx")
 FAILURES_FILE = Path("data/raw/Failure_2016.xlsx")
@@ -53,20 +53,24 @@ if inserted_rows > 0:
     print(df_full.loc[df_full[non_timestamp_cols].isna().all(axis=1), "Timestamp"].head(10))
 
 # =========================
-# 3. Keep only average features
+# 3. Keep Avg + Std features
 # =========================
-avg_cols = [c for c in df_full.columns if c.endswith("_Avg")]
-df_avg = df_full[["Timestamp"] + avg_cols].copy()
+feature_cols = [
+    c for c in df_full.columns
+    if c.endswith("_Avg") or c.endswith("_Std")
+]
 
-print(f"\nAvg feature count: {len(avg_cols)}")
-print(f"Dataset shape before imputation: {df_avg.shape}")
-print(f"Missing cells before imputation: {df_avg.drop(columns=['Timestamp']).isna().sum().sum()}")
-print(f"Rows with missing before imputation: {df_avg.drop(columns=['Timestamp']).isna().any(axis=1).sum()}")
+df_features = df_full[["Timestamp"] + feature_cols].copy()
+
+print(f"\nFeature count (Avg + Std): {len(feature_cols)}")
+print(f"Dataset shape before imputation: {df_features.shape}")
+print(f"Missing cells before imputation: {df_features.drop(columns=['Timestamp']).isna().sum().sum()}")
+print(f"Rows with missing before imputation: {df_features.drop(columns=['Timestamp']).isna().any(axis=1).sum()}")
 
 # =========================
 # 4. Impute by time interpolation
 # =========================
-df_imputed = df_avg.copy()
+df_imputed = df_features.copy()
 df_imputed = df_imputed.set_index("Timestamp")
 df_imputed = df_imputed.interpolate(method="time")
 df_imputed = df_imputed.ffill().bfill()
@@ -80,7 +84,7 @@ df_imputed.to_csv(IMPUTED_OUTPUT, index=False)
 print(f"Saved imputed dataset: {IMPUTED_OUTPUT}")
 
 # =========================
-# 5. Add failure labels using 24h pre-failure windows
+# 5. Add failure labels using pre-failure windows
 # =========================
 print(f"\nLoading failures from: {FAILURES_FILE}")
 failures = pd.read_excel(FAILURES_FILE)

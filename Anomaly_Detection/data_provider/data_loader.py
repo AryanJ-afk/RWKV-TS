@@ -1019,6 +1019,47 @@ class SWATSegLoader(Dataset):
                               index // self.step * self.win_size:index // self.step * self.win_size + self.win_size]), np.float32(
                 self.test_labels[index // self.step * self.win_size:index // self.step * self.win_size + self.win_size])
 
+class T06SegLoader(Dataset):
+    def __init__(self, root_path, win_size, step=1, flag="train"):
+        self.flag = flag
+        self.step = step
+        self.win_size = win_size
+
+        self.train = np.load(os.path.join(root_path, "train.npy"))
+        self.test = np.load(os.path.join(root_path, "test.npy"))
+        self.test_labels = np.load(os.path.join(root_path, "test_labels.npy"))
+
+        # normalize using train statistics only
+        self.scaler = StandardScaler()
+        self.scaler.fit(self.train)
+
+        self.train = self.scaler.transform(self.train)
+        self.test = self.scaler.transform(self.test)
+
+        # split train into train/val
+        train_len = int(len(self.train) * 0.8)
+
+        if self.flag == "train":
+            self.data = self.train[:train_len]
+            self.labels = np.zeros(len(self.data))
+        elif self.flag == "val":
+            self.data = self.train[train_len:]
+            self.labels = np.zeros(len(self.data))
+        elif self.flag == "test":
+            self.data = self.test
+            self.labels = self.test_labels
+        else:
+            raise ValueError(f"Unknown flag: {self.flag}")
+
+    def __len__(self):
+        return (len(self.data) - self.win_size) // self.step + 1
+
+    def __getitem__(self, index):
+        index = index * self.step
+        x = self.data[index:index + self.win_size]
+        y = self.labels[index:index + self.win_size]
+        return np.float32(x), np.float32(y)
+    
 
 class UEAloader(Dataset):
     """

@@ -13,6 +13,9 @@ import os
 import time
 import warnings
 import numpy as np
+import csv
+from pathlib import Path
+from datetime import datetime
 
 warnings.filterwarnings('ignore')
 
@@ -195,6 +198,81 @@ class Exp_Anomaly_Detection(Exp_Basic):
         print("Accuracy : {:0.4f}, Precision : {:0.4f}, Recall : {:0.4f}, F-score : {:0.4f} ".format(
             accuracy, precision,
             recall, f_score))
+        
+        # =========================
+        # CSV experiment logging
+        # =========================
+        log_dir = Path("./results")
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_file = log_dir / "experiment_log.csv"
+
+        row = {
+            "timestamp": datetime.now().isoformat(timespec="seconds"),
+            "setting": setting,
+            "task_name": self.args.task_name,
+            "model_id": self.args.model_id,
+            "model": self.args.model,
+            "data": self.args.data,
+            "root_path": self.args.root_path,
+
+            # preprocessing / dataset metadata
+            "turbine_id": getattr(self.args, "turbine_id", "T06"),
+            "feature_mode": getattr(self.args, "feature_mode", "Avg"),
+            "failure_window_hours": getattr(self.args, "failure_window_hours", 24),
+            "imputation_method": getattr(self.args, "imputation_method", "time_linear_ffill_bfill"),
+
+            # train/test setup
+            "seq_len": self.args.seq_len,
+            "label_len": self.args.label_len,
+            "pred_len": self.args.pred_len,
+            "features": self.args.features,
+            "enc_in": self.args.enc_in,
+            "dec_in": self.args.dec_in,
+            "c_out": self.args.c_out,
+
+            # model hyperparameters
+            "d_model": self.args.d_model,
+            "d_ff": self.args.d_ff,
+            "n_heads": self.args.n_heads,
+            "e_layers": self.args.e_layers,
+            "d_layers": self.args.d_layers,
+            "dropout": self.args.dropout,
+            "moving_avg": self.args.moving_avg,
+
+            # optimization
+            "batch_size": self.args.batch_size,
+            "train_epochs": self.args.train_epochs,
+            "patience": self.args.patience,
+            "learning_rate": self.args.learning_rate,
+            "lradj": self.args.lradj,
+
+            # anomaly config
+            "anomaly_ratio": self.args.anomaly_ratio,
+            "threshold": float(threshold),
+
+            # dataset sizes / outputs
+            "train_windows": int(len(train_data)),
+            "test_windows": int(len(test_data)),
+            "pred_points": int(len(pred)),
+            "gt_points": int(len(gt)),
+            "pred_anomalies": int(pred.sum()),
+            "gt_anomalies": int(gt.sum()),
+
+            # metrics
+            "accuracy": float(accuracy),
+            "precision": float(precision),
+            "recall": float(recall),
+            "f1": float(f_score),
+        }
+
+        write_header = not log_file.exists()
+        with open(log_file, "a", newline="") as fcsv:
+            writer = csv.DictWriter(fcsv, fieldnames=row.keys())
+            if write_header:
+                writer.writeheader()
+            writer.writerow(row)
+
+        print(f"Logged experiment to: {log_file}")
 
         f = open("result_anomaly_detection.txt", 'a')
         f.write(setting + "  \n")

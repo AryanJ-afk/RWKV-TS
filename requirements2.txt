@@ -1,0 +1,9 @@
+numpy
+pandas
+scikit-learn
+matplotlib
+einops
+openpyxl
+torch
+patool
+tqdm

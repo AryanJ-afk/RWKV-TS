@@ -41,7 +41,7 @@ parser.add_argument('--seasonal_patterns', type=str, default='Monthly', help='su
 parser.add_argument('--mask_rate', type=float, default=0.25, help='mask ratio')
 
 # anomaly detection task
-parser.add_argument('--anomaly_ratio', type=float, default=0.25, help='prior anomaly ratio (%)')
+parser.add_argument('--anomaly_ratio', type=float, default=0.25, help='prior anomaly ratio (%%)')
 
 # model define
 parser.add_argument('--top_k', type=int, default=5, help='for TimesBlock')
@@ -96,6 +96,13 @@ parser.add_argument('--ln', type=int, default=0)
 parser.add_argument('--mlp', type=int, default=0)
 parser.add_argument('--weight', type=float, default=0)
 parser.add_argument('--percent', type=int, default=5)
+
+# for clean logging
+parser.add_argument('--turbine_id', type=str, default='T06', help='turbine used for experiment')
+parser.add_argument('--feature_mode', type=str, default='Avg', help='feature set used, e.g. Avg or Avg+Std')
+parser.add_argument('--failure_window_hours', type=int, default=24, help='pre-failure labeling window in hours')
+parser.add_argument('--imputation_method', type=str, default='time_linear_ffill_bfill',
+                    help='imputation strategy used in preprocessing')
 
 args = parser.parse_args()
 args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False

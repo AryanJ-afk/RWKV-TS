@@ -156,3 +156,10 @@ data/
 jsonl_data/
 .DS_Store
 .DS_Store
+
+# Data Files
+checkpoints
+dataset
+results
+Anomaly_Detection/resulst_anomaly_detection.txt
+rwkvts-ad
