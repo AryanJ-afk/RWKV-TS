@@ -7,22 +7,23 @@ python run.py \
   --root_path ./dataset/T06 \
   --features M \
   --seq_len 50 \
-  --enc_in 46 \
-  --dec_in 46 \
-  --c_out 46 \
+  --enc_in 63 \
+  --dec_in 63 \
+  --c_out 63 \
   --d_model 64 \
   --n_heads 4 \
   --e_layers 1 \
   --d_ff 64 \
   --batch_size 64 \
-  --train_epochs 3 \
+  --train_epochs 10 \
   --patience 2 \
   --learning_rate 0.0001 \
-  --anomaly_ratio 3.28 \
+  --anomaly_ratio 2.5 \
+  --min_run_length 3 \
   --use_gpu False \
   --num_workers 0 \
   --turbine_id T06 \
-  --feature_mode Avg \
+  --feature_mode Avg+Std \
   --failure_window_hours 48 \
   --imputation_method time_linear_ffill_bfill
 

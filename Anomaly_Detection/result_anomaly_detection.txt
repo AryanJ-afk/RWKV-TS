@@ -19,3 +19,12 @@ Accuracy : 0.9684, Precision : 0.5097, Recall : 0.9440, F-score : 0.6620
 anomaly_detection_t06_base_RWKV4TS_T06_ftM_sl50_ll48_pl96_dm64_nh4_el1_dl1_df64_fc1_ebtimeF_dtTrue_test_0  
 Accuracy : 0.9675, Precision : 0.5788, Recall : 0.9455, F-score : 0.7180 
 
+anomaly_detection_t06_base_RWKV4TS_T06_ftM_sl50_ll48_pl96_dm64_nh4_el1_dl1_df64_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.9667, Precision : 0.5727, Recall : 0.9471, F-score : 0.7138 
+
+anomaly_detection_t06_base_RWKV4TS_T06_ftM_sl50_ll48_pl96_dm64_nh4_el1_dl1_df64_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.9694, Precision : 0.5954, Recall : 0.9447, F-score : 0.7304 
+
+anomaly_detection_t06_base_RWKV4TS_T06_ftM_sl50_ll48_pl96_dm64_nh4_el1_dl1_df64_fc1_ebtimeF_dtTrue_test_0  
+Accuracy : 0.9741, Precision : 0.6395, Recall : 0.9374, F-score : 0.7603 
+

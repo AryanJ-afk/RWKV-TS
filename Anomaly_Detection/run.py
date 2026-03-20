@@ -103,6 +103,8 @@ parser.add_argument('--feature_mode', type=str, default='Avg', help='feature set
 parser.add_argument('--failure_window_hours', type=int, default=24, help='pre-failure labeling window in hours')
 parser.add_argument('--imputation_method', type=str, default='time_linear_ffill_bfill',
                     help='imputation strategy used in preprocessing')
+parser.add_argument('--min_run_length', type=int, default=1,
+                    help='Minimum consecutive anomaly points required to keep a predicted anomaly run')
 
 args = parser.parse_args()
 args.use_gpu = True if torch.cuda.is_available() and args.use_gpu else False

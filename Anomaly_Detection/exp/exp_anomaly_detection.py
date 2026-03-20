@@ -19,6 +19,26 @@ from datetime import datetime
 
 warnings.filterwarnings('ignore')
 
+def filter_short_anomaly_runs(pred, min_run_length=1):
+    pred = pred.copy()
+    n = len(pred)
+    start = 0
+
+    while start < n:
+        if pred[start] == 1:
+            end = start
+            while end < n and pred[end] == 1:
+                end += 1
+
+            run_length = end - start
+            if run_length < min_run_length:
+                pred[start:end] = 0
+
+            start = end
+        else:
+            start += 1
+
+    return pred
 
 class Exp_Anomaly_Detection(Exp_Basic):
     def __init__(self, args):
@@ -178,6 +198,7 @@ class Exp_Anomaly_Detection(Exp_Basic):
 
         # (3) evaluation on the test set
         pred = (test_energy > threshold).astype(int)
+        pred = filter_short_anomaly_runs(pred, min_run_length=self.args.min_run_length)
         test_labels = np.concatenate(test_labels, axis=0).reshape(-1)
         test_labels = np.array(test_labels)
         gt = test_labels.astype(int)
@@ -248,6 +269,7 @@ class Exp_Anomaly_Detection(Exp_Basic):
 
             # anomaly config
             "anomaly_ratio": self.args.anomaly_ratio,
+            "min_run_length": self.args.min_run_length,
             "threshold": float(threshold),
 
             # dataset sizes / outputs
