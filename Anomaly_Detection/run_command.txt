@@ -27,7 +27,14 @@ python run.py \
   --imputation_method time_linear_ffill_bfill
 
 
-
+python scripts/feature_selection.py \
+  --input_file data/processed/t06_dataset_with_labels.csv \
+  --output_file data/processed/t06_dataset_with_labels_fs.csv \
+  --feature_list_file data/processed/selected_features_fs.txt \
+  --summary_file data/processed/feature_selection_summary_fs.txt \
+  --std_threshold 0.01 \
+  --corr_threshold 0.95 \
+  --min_features 15
 
 
 rm -rf rwkvts-ad

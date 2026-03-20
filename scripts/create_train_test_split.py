@@ -1,6 +1,6 @@
 import pandas as pd
 
-df = pd.read_csv("data/processed/t06_dataset_with_labels.csv")
+df = pd.read_csv("data/processed/t06_dataset_with_labels_fs.csv")
 
 # TRAIN: only normal data
 train_df = df[df["failure"] == 0].copy()

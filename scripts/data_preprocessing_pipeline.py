@@ -57,12 +57,15 @@ if inserted_rows > 0:
 # =========================
 feature_cols = [
     c for c in df_full.columns
-    if c.endswith("_Avg") or c.endswith("_Std")
+    if ("avg" in c.lower()) or ("std" in c.lower())
 ]
 
 df_features = df_full[["Timestamp"] + feature_cols].copy()
 
 print(f"\nFeature count (Avg + Std): {len(feature_cols)}")
+print("Selected columns:")
+print(feature_cols)
+
 print(f"Dataset shape before imputation: {df_features.shape}")
 print(f"Missing cells before imputation: {df_features.drop(columns=['Timestamp']).isna().sum().sum()}")
 print(f"Rows with missing before imputation: {df_features.drop(columns=['Timestamp']).isna().any(axis=1).sum()}")
