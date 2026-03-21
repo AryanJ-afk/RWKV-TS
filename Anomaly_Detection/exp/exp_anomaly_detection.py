@@ -19,26 +19,34 @@ from datetime import datetime
 
 warnings.filterwarnings('ignore')
 
-def filter_short_anomaly_runs(pred, min_run_length=1):
-    pred = pred.copy()
-    n = len(pred)
-    start = 0
+def filter_anomalies_by_local_support(pred, min_run_length=3):
+    """
+    Keep a predicted anomaly point only if there are at least min_run_length
+    anomaly points inside a local window centered on that point.
 
-    while start < n:
-        if pred[start] == 1:
-            end = start
-            while end < n and pred[end] == 1:
-                end += 1
+    Example:
+    min_run_length = 3  -> window size = 5
+    so each point checks [i-2, i-1, i, i+1, i+2]
+    and survives if sum(window) >= 3
+    """
+    if min_run_length <= 1:
+        return pred.copy()
 
-            run_length = end - start
-            if run_length < min_run_length:
-                pred[start:end] = 0
+    pred = np.asarray(pred).astype(int)
+    filtered = pred.copy()
 
-            start = end
-        else:
-            start += 1
+    radius = min_run_length - 1   # for 3 -> radius 2, window size 5
 
-    return pred
+    for i in range(len(pred)):
+        if pred[i] == 1:
+            left = max(0, i - radius)
+            right = min(len(pred), i + radius + 1)
+            local_sum = pred[left:right].sum()
+
+            if local_sum < min_run_length:
+                filtered[i] = 0
+
+    return filtered
 
 class Exp_Anomaly_Detection(Exp_Basic):
     def __init__(self, args):
@@ -198,32 +206,41 @@ class Exp_Anomaly_Detection(Exp_Basic):
 
         # (3) evaluation on the test set
         pred = (test_energy > threshold).astype(int)
-        pred = filter_short_anomaly_runs(pred, min_run_length=self.args.min_run_length)
+        pred = filter_anomalies_by_local_support(pred, min_run_length=self.args.min_run_length)
+
         test_labels = np.concatenate(test_labels, axis=0).reshape(-1)
         test_labels = np.array(test_labels)
         gt = test_labels.astype(int)
 
-        print("pred:   ", pred.shape)
-        print("gt:     ", gt.shape)
+        # -------- RAW metrics --------
+        raw_pred = pred.copy()
+        raw_gt = gt.copy()
 
-        # (4) detection adjustment
-        gt, pred = adjustment(gt, pred)
+        raw_accuracy = accuracy_score(raw_gt, raw_pred)
+        raw_precision, raw_recall, raw_f_score, _ = precision_recall_fscore_support(
+            raw_gt, raw_pred, average='binary'
+        )
 
-        pred = np.array(pred)
-        gt = np.array(gt)
-        print("pred: ", pred.shape)
-        print("gt:   ", gt.shape)
 
-        accuracy = accuracy_score(gt, pred)
-        precision, recall, f_score, support = precision_recall_fscore_support(gt, pred, average='binary')
-        print("Accuracy : {:0.4f}, Precision : {:0.4f}, Recall : {:0.4f}, F-score : {:0.4f} ".format(
-            accuracy, precision,
-            recall, f_score))
+        # -------- Adjusted metrics --------
+        adj_gt, adj_pred = adjustment(gt.copy(), pred.copy())
+
+        adj_pred = np.array(adj_pred)
+        adj_gt = np.array(adj_gt)
+
+        accuracy = accuracy_score(adj_gt, adj_pred)
+        precision, recall, f_score, _ = precision_recall_fscore_support(
+            adj_gt, adj_pred, average='binary'
+        )
+
+        print("Accuracy : {:0.4f}, Precision : {:0.4f}, Recall : {:0.4f}, F-score : {:0.4f}".format(
+            accuracy, precision, recall, f_score
+        ))
         
         # =========================
         # CSV experiment logging
         # =========================
-        log_dir = Path("./results")
+        log_dir = Path(__file__).resolve().parents[1] / "results"
         log_dir.mkdir(parents=True, exist_ok=True)
         log_file = log_dir / "experiment_log.csv"
 
@@ -275,19 +292,31 @@ class Exp_Anomaly_Detection(Exp_Basic):
             # dataset sizes / outputs
             "train_windows": int(len(train_data)),
             "test_windows": int(len(test_data)),
-            "pred_points": int(len(pred)),
-            "gt_points": int(len(gt)),
-            "pred_anomalies": int(pred.sum()),
-            "gt_anomalies": int(gt.sum()),
+            "raw_pred_points": int(len(raw_pred)),
+            "raw_gt_points": int(len(raw_gt)),
+            "adjusted_pred_points": int(len(adj_pred)),
+            "adjusted_gt_points": int(len(adj_gt)),
 
-            # metrics
-            "accuracy": float(accuracy),
-            "precision": float(precision),
-            "recall": float(recall),
-            "f1": float(f_score),
+            # anomaly counts
+            "raw_pred_anomalies": int(raw_pred.sum()),
+            "raw_gt_anomalies": int(raw_gt.sum()),
+            "adjusted_pred_anomalies": int(adj_pred.sum()),
+            "adjusted_gt_anomalies": int(adj_gt.sum()),
+
+            # raw metrics
+            "raw_accuracy": float(raw_accuracy),
+            "raw_precision": float(raw_precision),
+            "raw_recall": float(raw_recall),
+            "raw_f1": float(raw_f_score),
+
+            # adjusted metrics
+            "adjusted_accuracy": float(accuracy),
+            "adjusted_precision": float(precision),
+            "adjusted_recall": float(recall),
+            "adjusted_f1": float(f_score),
         }
 
-        write_header = not log_file.exists()
+        write_header = (not log_file.exists()) or (log_file.stat().st_size == 0)
         with open(log_file, "a", newline="") as fcsv:
             writer = csv.DictWriter(fcsv, fieldnames=row.keys())
             if write_header:
