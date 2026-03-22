@@ -4,7 +4,7 @@ from pathlib import Path
 # =========================
 # Config
 # =========================
-TURBINE_ID = "T06"
+TURBINE_ID = "T11"
 WINDOW_HOURS = 48
 
 SIGNALS_FILE = Path("data/raw/Wind-Turbine-SCADA-signals-2016.xlsx")
@@ -13,7 +13,7 @@ FAILURES_FILE = Path("data/raw/Failure_2016.xlsx")
 OUTPUT_DIR = Path("data/processed")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-FINAL_OUTPUT = OUTPUT_DIR / "t06_dataset_with_labels.csv"
+FINAL_OUTPUT = OUTPUT_DIR / "t11_dataset_with_labels.csv"
 IMPUTED_OUTPUT = OUTPUT_DIR / "t06_signals_2016_imputed.csv"  # optional debug artifact
 
 # =========================
